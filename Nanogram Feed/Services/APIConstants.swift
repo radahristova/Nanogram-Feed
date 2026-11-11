@@ -6,3 +6,9 @@
 //
 
 import Foundation
+
+struct APIConstants {
+	static let baseURL = URL(
+		string: "https://gist.githubusercontent.com/jimagination/caed8b3e0e5d17a01a4d06cfc07dd362/raw/"
+	)!
+}
