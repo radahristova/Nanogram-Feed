@@ -7,12 +7,16 @@
 
 import Foundation
 
+protocol GamesAPI {
+	func fetchPage(_ page: Int) async throws -> GamesPage
+}
+
 enum GamesAPIError: Error {
 	case invalidResponse
 	case httpStatus(Int)
 }
 
-struct GamesAPIClient {
+struct GamesAPIClient: GamesAPI {
 	func fetchPage(_ page: Int) async throws -> GamesPage {
 		let url = APIConstants.baseURL.appending(path: "page-\(page).json")
 		
@@ -25,7 +29,12 @@ struct GamesAPIClient {
 		guard (200..<300).contains(httpResponse.statusCode) else {
 			throw GamesAPIError.httpStatus(httpResponse.statusCode)
 		}
+		do {
+			return try JSONDecoder().decode(GamesPage.self, from: data)
+		} catch {
+			print("Page \(page) decoding failed with error: \(error)")
+			throw error
+		}
 		
-		return try JSONDecoder().decode(GamesPage.self, from: data)
 	}
 }
