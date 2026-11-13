@@ -8,17 +8,46 @@
 import SwiftUI
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
-    }
+	@StateObject private var viewModel = FeedViewModel(apiClient: GamesAPIClient())
+	@State private var isPlaying = false
+	
+	var body: some View {
+		Group {
+			if viewModel.games.isEmpty {
+				if viewModel.isLoadingInitialPage {
+					ProgressView("Loading game")
+				} else if let message = viewModel.initialPageErrorMessage {
+					VStack(spacing: 12) {
+						Text("Could't load games")
+							.font(.headline)
+						
+						Text(message)
+							.multilineTextAlignment(.center)
+						
+						Button("Retry") {
+							Task {
+								await viewModel.loadInitialPage()
+							}
+						}
+					}
+					.padding()
+				} else {
+					Text("No games available")
+				}
+			} else {
+				GameFeedView(
+					games: viewModel.games,
+					isPlaying: $isPlaying
+				)
+				.ignoresSafeArea()
+			}
+		}
+		.task {
+			await viewModel.loadInitialPage()
+		}
+	}
 }
 
 #Preview {
-    ContentView()
+	ContentView()
 }
