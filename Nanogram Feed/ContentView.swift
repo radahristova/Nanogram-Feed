@@ -16,7 +16,9 @@ struct ContentView: View {
 		Group {
 			if viewModel.games.isEmpty {
 				if viewModel.isLoadingInitialPage {
-					ProgressView("Loading game")
+					ProgressView {
+						Text("Loading game...")
+					}
 				} else if let message = viewModel.initialPageErrorMessage {
 					VStack(spacing: 12) {
 						Text("Could't load games")
@@ -38,6 +40,8 @@ struct ContentView: View {
 			} else {
 				GameFeedView(
 					games: viewModel.games,
+					isLastPage: viewModel.nextPageNumber == nil,
+					likedGameIDs: viewModel.likedGameIDs,
 					isPlaying: $isPlaying,
 					currentGameIndex: $currentGameIndex,
 					onNearEnd: {
@@ -45,7 +49,9 @@ struct ContentView: View {
 							await viewModel.loadNextPage()
 						}
 					},
-					isLastPage: viewModel.nextPageNumber == nil
+					onLikedTapped: { gameID in
+						viewModel.toggleLike(for: gameID)
+					}
 				)
 				.ignoresSafeArea()
 			}

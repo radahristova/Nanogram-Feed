@@ -17,14 +17,15 @@ struct GamePageView: View {
 	let game: Game
 	@Binding var isPlaying: Bool
 	let isActive: Bool
+	let isLiked: Bool
+	let onLikeTapped: () -> Void
+	
+	@Environment(\.scenePhase) private var scenePhase
 	@State private var loadState: GamePageLoadState = .loading
-	@State private var isLiked = false
 	
 	private var displayedLikes: Int {
 		game.stats.likes + (isLiked ? 1 : 0)
 	}
-	
-	@Environment(\.scenePhase) private var scenePhase
 	
 	private var isGameActive: Bool {
 		isActive && scenePhase == .active
@@ -140,21 +141,19 @@ struct GamePageView: View {
 			HStack(spacing: 16) {
 				Label("\(game.stats.plays)", systemImage: "play")
 				
-				Button {
-					isLiked.toggle()
-				} label: {
+				Button(action: onLikeTapped) {
 					Label(
 						"\(displayedLikes)",
 						systemImage: isLiked ? "heart.fill" : "heart"
 					)
+					.buttonStyle(.plain)
 				}
-				.buttonStyle(.plain)
+				.font(.subheadline)
 			}
-			.font(.subheadline)
+			.foregroundStyle(.white)
 		}
-		.foregroundStyle(.white)
+		
 	}
-	
 }
 
 #Preview {
@@ -176,6 +175,11 @@ struct GamePageView: View {
 			""",
 			creator: Creator(username: "preview"),
 			stats: GameStats(plays: 123, likes: 45)
-		), isPlaying: .constant(false), isActive: true
+		),
+		isPlaying: .constant(false),
+		isActive: true,
+		isLiked: false,
+		onLikeTapped: {}
 	)
 }
+	

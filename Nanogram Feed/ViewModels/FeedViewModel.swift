@@ -16,13 +16,15 @@ final class FeedViewModel: ObservableObject {
 	@Published private(set) var isLoadingNextPage = false
     @Published private(set) var initialPageErrorMessage: String?
 	@Published private(set) var nextPageErrorMessage: String?
+	@Published private(set) var likedGameIDs: Set<String> = []
 	
 	private let apiClient: GamesAPI
+	private let likesStore = LikesStore()
 	
 	init(apiClient: GamesAPI) {
-		self.apiClient = GamesAPIClient()
+		self.apiClient = apiClient
+		self.likedGameIDs = likesStore.likedGameIDs
 	}
-
 	
 	func loadInitialPage() async {
 		guard games.isEmpty, !isLoadingInitialPage else { return }
@@ -56,6 +58,11 @@ final class FeedViewModel: ObservableObject {
 		} catch {
 			nextPageErrorMessage = error.localizedDescription
 		}
+	}
+	
+	func toggleLike(for gameIDs: String) {
+		likesStore.toggleLike(for: gameIDs)
+		likedGameIDs = likesStore.likedGameIDs
 	}
 	
 	private func logSkippedGames(in page: GamesPage) {

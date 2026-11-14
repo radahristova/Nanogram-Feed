@@ -10,10 +10,14 @@ import UIKit
 
 struct GameFeedView: UIViewRepresentable {
 	let games: [Game]
+	let isLastPage: Bool
+	let likedGameIDs: Set<String>
+	
 	@Binding var isPlaying: Bool
 	@Binding var currentGameIndex: Int
+	
 	let onNearEnd: () -> Void
-	let isLastPage: Bool
+	let onLikedTapped: (String) -> Void
 	
 	private let cellIdentifier = "GamePageCell"
 	
@@ -50,27 +54,32 @@ struct GameFeedView: UIViewRepresentable {
 		
 		collectionView.isScrollEnabled = !isPlaying
 		
-		let newGameIDs = games.map(\.id)
+		let gameIDs = games.map(\.id)
 		let displayedIDs = isLastPage && !games.isEmpty
-		? newGameIDs + ["loop-start-\(games[0].id)"]
-		: newGameIDs
+		? gameIDs + ["loop-start-\(games[0].id)"]
+		: gameIDs
 		
-		if displayedIDs != coordinator.gameIDs {
+		let gamesChanged = displayedIDs != coordinator.gameIDs
+		let activeIndexChanged = coordinator.configuredActiveIndex != currentGameIndex
+		let likesChanged = coordinator.configuredLikedGamesIDs != likedGameIDs
+		
+		if gamesChanged {
 			coordinator.gameIDs = displayedIDs
 			collectionView.reloadData()
 		}
 		
-		if coordinator.configuredActiveIndex != currentGameIndex {
-			coordinator.configuredActiveIndex = currentGameIndex
-			
-			for indexPath in collectionView.indexPathsForVisibleItems {
-				guard let cell = collectionView.cellForItem(at: indexPath) else {
-					continue
-				}
-				
-				coordinator.configure(cell, at: indexPath)
-			}
-		}
+		if gamesChanged || activeIndexChanged || likesChanged {
+			 coordinator.configuredActiveIndex = currentGameIndex
+			 coordinator.configuredLikedGamesIDs = likedGameIDs
+
+			 for indexPath in collectionView.indexPathsForVisibleItems {
+				 guard let cell = collectionView.cellForItem(at: indexPath) else {
+					 continue
+				 }
+
+				 coordinator.configure(cell, at: indexPath)
+			 }
+		 }
 	}
 	
 	final class Coordinator: NSObject, UICollectionViewDataSource,
@@ -78,6 +87,7 @@ struct GameFeedView: UIViewRepresentable {
 		var parent: GameFeedView
 		var gameIDs: [String] = []
 		var configuredActiveIndex: Int?
+		var configuredLikedGamesIDs: Set<String>?
 		
 		init(parent: GameFeedView) {
 			self.parent = parent
@@ -95,13 +105,16 @@ struct GameFeedView: UIViewRepresentable {
 
 			let gameIndex = indexPath.item == parent.games.count ? 0 : indexPath.item
 			let game = parent.games[gameIndex]
-			let isActive = gameIndex == parent.currentGameIndex
 
 			cell.contentConfiguration = UIHostingConfiguration {
 				GamePageView(
 					game: game,
 					isPlaying: parent.$isPlaying,
-					isActive: isActive
+					isActive: gameIndex == parent.currentGameIndex,
+					isLiked: parent.likedGameIDs.contains(game.id),
+					onLikeTapped: {
+						self.parent.onLikedTapped(game.id)
+					}
 				)
 			}
 			.margins(.all, 0)
