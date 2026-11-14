@@ -16,11 +16,18 @@ private enum GamePageLoadState {
 struct GamePageView: View {
 	let game: Game
 	@Binding var isPlaying: Bool
+	let isActive: Bool
 	@State private var loadState: GamePageLoadState = .loading
 	@State private var isLiked = false
 	
 	private var displayedLikes: Int {
 		game.stats.likes + (isLiked ? 1 : 0)
+	}
+	
+	@Environment(\.scenePhase) private var scenePhase
+	
+	private var isGameActive: Bool {
+		isActive && scenePhase == .active
 	}
 	
 	var body: some View {
@@ -31,6 +38,7 @@ struct GamePageView: View {
 			GameWebView(
 				html: game.html,
 				isInteractionEnabled: isPlaying,
+				isActive: isGameActive,
 				onReady: {
 					loadState = .ready
 				},
@@ -39,6 +47,14 @@ struct GamePageView: View {
 				}
 			)
 			.ignoresSafeArea()
+			
+			LinearGradient(
+				colors: [.clear, .black.opacity(0.8)],
+				startPoint: .center,
+				endPoint: .bottom
+			)
+			.ignoresSafeArea()
+			.allowsHitTesting(false)
 			
 			if !isPlaying {
 				Button {
@@ -49,16 +65,11 @@ struct GamePageView: View {
 						.padding(.vertical, 12)
 				}
 				.buttonStyle(.borderedProminent)
-				.frame(maxWidth: .infinity, maxHeight: .infinity)
+				.frame(
+					maxWidth: .infinity,
+					maxHeight: .infinity
+				)
 			}
-			
-			LinearGradient(
-				colors: [.clear, .black.opacity(0.8)],
-				startPoint: .center,
-				endPoint: .bottom
-			)
-			.ignoresSafeArea()
-			.allowsHitTesting(false)
 			
 			if isPlaying {
 				Button {
@@ -69,7 +80,11 @@ struct GamePageView: View {
 						.background(.regularMaterial, in: Circle())
 				}
 				.padding()
-				.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+				.frame(
+					maxWidth: .infinity,
+					maxHeight: .infinity,
+					alignment: .topTrailing
+				)
 			} else {
 				gameDetails
 					.padding()
@@ -78,6 +93,12 @@ struct GamePageView: View {
 		}
 		.overlay {
 			loadStateOverlay
+		}
+		.ignoresSafeArea()
+		.onChange(of: isGameActive) { _, becameActive in
+			if becameActive {
+				loadState = .loading
+			}
 		}
 	}
 	
@@ -155,6 +176,6 @@ struct GamePageView: View {
 			""",
 			creator: Creator(username: "preview"),
 			stats: GameStats(plays: 123, likes: 45)
-		), isPlaying: .constant(false)
+		), isPlaying: .constant(false), isActive: true
 	)
 }

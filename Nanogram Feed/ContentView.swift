@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
 	@StateObject private var viewModel = FeedViewModel(apiClient: GamesAPIClient())
 	@State private var isPlaying = false
+	@State private var currentGameIndex = 0
 	
 	var body: some View {
 		Group {
@@ -37,7 +38,14 @@ struct ContentView: View {
 			} else {
 				GameFeedView(
 					games: viewModel.games,
-					isPlaying: $isPlaying
+					isPlaying: $isPlaying,
+					currentGameIndex: $currentGameIndex,
+					onNearEnd: {
+						Task {
+							await viewModel.loadNextPage()
+						}
+					},
+					isLastPage: viewModel.nextPageNumber == nil
 				)
 				.ignoresSafeArea()
 			}
