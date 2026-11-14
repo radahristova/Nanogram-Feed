@@ -73,19 +73,26 @@ struct GamePageView: View {
 			}
 			
 			if isPlaying {
-				Button {
-					isPlaying = false
-				} label: {
-					Image(systemName: "xmark")
-						.padding(12)
-						.background(.regularMaterial, in: Circle())
+				VStack {
+					HStack {
+						Spacer()
+
+						Button {
+							isPlaying = false
+						} label: {
+							Image(systemName: "xmark")
+								.font(.headline.weight(.bold))
+								.frame(width: 44, height: 44)
+								.background(.ultraThinMaterial, in: Circle())
+						}
+						.accessibilityLabel("Close game")
+					}
+					.padding(.horizontal, 16)
+					.padding(.top, 12)
+
+					Spacer()
 				}
-				.padding()
-				.frame(
-					maxWidth: .infinity,
-					maxHeight: .infinity,
-					alignment: .topTrailing
-				)
+				.safeAreaPadding(.top)
 			} else {
 				gameDetails
 					.padding()
@@ -151,6 +158,7 @@ struct GamePageView: View {
 				.font(.subheadline)
 			}
 			.foregroundStyle(.white)
+			.padding()
 		}
 		
 	}
