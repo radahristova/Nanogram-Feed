@@ -28,4 +28,18 @@ struct GamesPage: Decodable {
 		games = decodedGames.elements
 		skippedGameCount = decodedGames.skippedCount
 	}
+	
+	init(
+		page: Int,
+		totalPages: Int,
+		nextPage: Int?,
+		games: [Game],
+		skippedGameCount: Int = 0
+	) {
+		self.page = page
+		self.totalPages = totalPages
+		self.nextPage = nextPage
+		self.games = games
+		self.skippedGameCount = skippedGameCount
+	}
 }

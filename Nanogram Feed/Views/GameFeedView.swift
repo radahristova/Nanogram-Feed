@@ -35,6 +35,7 @@ struct GameFeedView: UIViewRepresentable {
 			collectionViewLayout: layout
 		)
 		
+		collectionView.accessibilityIdentifier = "gameFeed"
 		collectionView.backgroundColor = .black
 		collectionView.isPagingEnabled = true
 		collectionView.showsVerticalScrollIndicator = false

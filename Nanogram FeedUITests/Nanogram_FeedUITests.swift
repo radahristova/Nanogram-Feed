@@ -9,35 +9,52 @@ import XCTest
 
 final class Nanogram_FeedUITests: XCTestCase {
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+	private var app: XCUIApplication!
 
-        // In UI tests it is usually best to stop immediately when a failure occurs.
-        continueAfterFailure = false
+	override func setUpWithError() throws {
+		continueAfterFailure = false
 
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
+		app = XCUIApplication()
+		app.launch()
+	}
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
+	func testAppLaunches() {
+		XCTAssertTrue(
+			app.wait(for: .runningForeground, timeout: 5)
+		)
+	}
 
-    @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
-        let app = XCUIApplication()
-        app.launch()
+	func testFeedAppearsAfterInitialLoad() {
+		let feed = app.collectionViews["gameFeed"]
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
-    }
+		XCTAssertTrue(
+			feed.waitForExistence(timeout: 15),
+			"The game feed should appear after the initial API page loads."
+		)
+	}
 
-    @MainActor
-    func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
-        measure(metrics: [XCTApplicationLaunchMetric()]) {
-            XCUIApplication().launch()
-        }
-    }
+	func testPlayModeCanOpenAndClose() {
+		let playButton = app.buttons["playGameButton"]
+
+		guard playButton.waitForExistence(timeout: 15) else {
+			XCTFail("The Play button did not appear.")
+			return
+		}
+
+		playButton.tap()
+
+		let closeButton = app.buttons["closeGameButton"]
+
+		XCTAssertTrue(
+			closeButton.waitForExistence(timeout: 3),
+			"Closing control should appear in play mode."
+		)
+
+		closeButton.tap()
+
+		XCTAssertTrue(
+			app.buttons["playGameButton"].waitForExistence(timeout: 3),
+			"Play button should reappear after closing play mode."
+		)
+	}
 }

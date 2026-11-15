@@ -70,6 +70,7 @@ struct GamePageView: View {
 					maxWidth: .infinity,
 					maxHeight: .infinity
 				)
+				.accessibilityIdentifier("playGameButton")
 			}
 			
 			if isPlaying {
@@ -85,6 +86,7 @@ struct GamePageView: View {
 								.frame(width: 44, height: 44)
 								.background(.ultraThinMaterial, in: Circle())
 						}
+						.accessibilityIdentifier("closeGameButton")
 						.accessibilityLabel("Close game")
 					}
 					.padding(.horizontal, 16)
@@ -155,6 +157,7 @@ struct GamePageView: View {
 					)
 					.buttonStyle(.plain)
 				}
+				.accessibilityIdentifier("likeGameButton")
 				.font(.subheadline)
 			}
 			.foregroundStyle(.white)

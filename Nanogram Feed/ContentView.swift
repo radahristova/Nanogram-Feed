@@ -34,6 +34,7 @@ struct ContentView: View {
 								await viewModel.loadInitialPage()
 							}
 						}
+						.accessibilityIdentifier("initialLoadRetryButton")
 					}
 					.padding()
 				} else {
